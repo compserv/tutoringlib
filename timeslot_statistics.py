@@ -25,4 +25,4 @@ for tutor in data_json["tutors"]:
     process_tutor_slots(tutor)
 
 for slot in data_json["slots"]:
-    print(slot_stats[slot["sid"]], slot["office"], slot["day"], slot["hour"])
+    print(slot_stats.get(slot["sid"], -1), slot["office"], slot["day"], slot["hour"])

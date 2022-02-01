@@ -16,9 +16,14 @@ def mergeCourseNames(web, rails):
 def mergeTutors(web, rails):
     #add all hkn-web tutors + info
     webNames = {}
+    empty_timeslots_onlyinhknweb = set()
     for tutor in web["tutors"]:
         cache = {}
         for element in ["name", "timeSlots", "officePrefs", "adjacentPref", "numAssignments"]:
+            if element == "timeSlots":
+                total_sum = sum(abs(number) for number in tutor["timeSlots"])
+                if total_sum == 0:
+                    empty_timeslots_onlyinhknweb.add(tutor["name"])
             cache[element] = tutor[element]
         webNames[cache["name"]] = cache
 
@@ -41,14 +46,21 @@ def mergeTutors(web, rails):
                     webNames[name][key] = railNames[name][key]
         else:
             not_matched_rails.append(name)
+            if name in empty_timeslots_onlyinhknweb:
+                empty_timeslots_onlyinhknweb.remove(name)
 
     not_matched_web = []
     for name in railNames.keys():
         if not name in webNames:
             not_matched_web.append(name)
+    
+    if True:
+        for name in not_matched_rails:
+            if name in webNames:
+                del webNames[name]
 
     mergedTutors = list(webNames.values())
-    return mergedTutors, not_matched_rails, not_matched_web
+    return mergedTutors, not_matched_rails, not_matched_web, empty_timeslots_onlyinhknweb
 
 SPECIAL_DAY_CONVERSION = {"Tuesday" : "Tues", "Thursday" : "Thus"}
 
@@ -97,10 +109,10 @@ def mergeSlots(web, rails):
             merge["name"] = railsDict[key]["name"]
             merge["day"] = key[2]
             merge["office"] = key[0] #webDict[key]["office"]
-            merge["courses"] = railsDict[key]["courses"] if key[0] != "Online" else [1] * len(railsDict[key]["courses"])
-            merge["adjacentSlotIDs"] = webDict[key]["adjacentSlotIDs"]
+            merge["courses"] = railsDict[key]["courses"]
+            merge["adjacentSlotIDs"] = webDict[key]["adjacentSlotIDs"] if key[0] != "Online" else [1] * len(webDict[key]["adjacentSlotIDs"])
             merge["sid"] = webDict[key]["sid"]
-            mergedList.append(merge)
+            mergedList += [merge]
         else:
             web_errors.append(key)
     return mergedList, web_errors
@@ -121,14 +133,19 @@ if __name__ == "__main__":
     railsJSON = readJSONtoDict(railsfile)
     outJSON = {}
     outJSON["courseName"] = mergeCourseNames(webJSON, railsJSON)
-    outJSON["tutors"], notInRails, notInWeb = mergeTutors(webJSON, railsJSON)
+    outJSON["tutors"], notInRails, notInWeb, empty_timeslots_onlyinhknweb = mergeTutors(webJSON, railsJSON)
     outJSON["slots"], errors = mergeSlots(webJSON, railsJSON)
-    """ Uncomment or comment for error output
+    # """ Uncomment or comment for error output
     print("Tutors exist in hkn-web but not in hkn-rails")
     print(notInRails)
+    print("----------------")
     print("Tutors exist in hkn-rails but not in hkn-web")
     print(notInWeb)
+    print("----------------")
     print("(Office, Hour, Day) entries in hkn-web but not in hkn-rails")
     print(errors)
-    """
+    print("----------------")
+    print("Empty TimeSlot Preferences AND in hkn-rails:")
+    print(empty_timeslots_onlyinhknweb)
+    # """
     writeJSONtoFile(outJSON, outfile)
