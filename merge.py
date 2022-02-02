@@ -2,11 +2,11 @@ import json
 import sys
 
 def writeJSONtoFile(data, file):
-    with open(file, 'w') as f:
-        json.dump(data, f, indent=4)
+    with open(file, 'w', encoding='utf8') as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 def readJSONtoDict(file):
-    with open(file, 'r') as f:
+    with open(file, 'r', encoding='utf8') as f:
         return json.load(f)
 
 #purely for readability, this is a one-line job
