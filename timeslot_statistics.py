@@ -1,6 +1,12 @@
 import json
+import sys
 
-with open('sandbox/hknrails_output.json') as f:
+if len(sys.argv) == 2:
+    filename = sys.argv[1]
+else:
+    print("Error - please specify one file name with the combined JSON")
+
+with open(filename) as f:
     data_json = json.load(f)
 
 slot_stats = {}
