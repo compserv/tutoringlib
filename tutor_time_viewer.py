@@ -25,3 +25,5 @@ def show_tutor_slots(tutor_name):
             print("Office Pref:", o)
             print(curr_slot)
             print()
+
+print("Please use the function \"show_tutor_slots(tutor_name)\"")
