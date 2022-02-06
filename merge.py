@@ -9,6 +9,8 @@ def readJSONtoDict(file):
     with open(file, 'r', encoding='utf8') as f:
         return json.load(f)
 
+EXEMPTED_NAMES = [] # Place hkn-rails names of people who are exempted
+
 #purely for readability, this is a one-line job
 def mergeCourseNames(web, rails):
     return rails["courseName"]
@@ -58,6 +60,12 @@ def mergeTutors(web, rails):
         for name in not_matched_rails:
             if name in webNames:
                 del webNames[name]
+    
+    for exempt_name in EXEMPTED_NAMES:
+        del webNames[exempt_name]
+        if exempt_name in empty_timeslots_onlyinhknweb:
+            empty_timeslots_onlyinhknweb.remove(exempt_name)
+        print("Exempted", exempt_name)
 
     mergedTutors = list(webNames.values())
     return mergedTutors, not_matched_rails, not_matched_web, empty_timeslots_onlyinhknweb
