@@ -38,12 +38,13 @@ def mergeTutors(web, rails):
         railNames[cache["name"]] = cache
 
     not_matched_rails = []
+    assignment_mismatches = []
     for name in webNames.keys():
         if name in railNames:
             keys = railNames[name].keys()
             for key in keys:
                 if key == "numAssignments" and webNames[name][key] != railNames[name][key]:
-                    print(name, webNames[name][key], railNames[name][key])
+                    assignment_mismatches.append((name, webNames[name][key], railNames[name][key]))
                 else:
                     webNames[name][key] = railNames[name][key]
         else:
@@ -68,7 +69,7 @@ def mergeTutors(web, rails):
         print("Exempted", exempt_name)
 
     mergedTutors = list(webNames.values())
-    return mergedTutors, not_matched_rails, not_matched_web, empty_timeslots_onlyinhknweb
+    return mergedTutors, not_matched_rails, not_matched_web, empty_timeslots_onlyinhknweb, assignment_mismatches
 
 SPECIAL_DAY_CONVERSION = {"Tuesday" : "Tues", "Thursday" : "Thus"}
 
@@ -141,9 +142,13 @@ if __name__ == "__main__":
     railsJSON = readJSONtoDict(railsfile)
     outJSON = {}
     outJSON["courseName"] = mergeCourseNames(webJSON, railsJSON)
-    outJSON["tutors"], notInRails, notInWeb, empty_timeslots_onlyinhknweb = mergeTutors(webJSON, railsJSON)
+    outJSON["tutors"], notInRails, notInWeb, empty_timeslots_onlyinhknweb, assignment_mismatches = mergeTutors(webJSON, railsJSON)
     outJSON["slots"], errors = mergeSlots(webJSON, railsJSON)
     # """ Uncomment or comment for error output
+    print("Assignment mismatches (name, hknweb reported hours, hkn-rails position hours)")
+    for mismatch in assignment_mismatches:
+        print(" ".join(str(m) for m in mismatch))
+    print("----------------")
     print("Tutors exist in hkn-web but not in hkn-rails")
     print(notInRails)
     print("----------------")
